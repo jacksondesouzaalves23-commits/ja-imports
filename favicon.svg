@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<defs><mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="188" height="100"><rect width="188" height="100" fill="#fff"/><rect y="44" width="188" height="6" fill="#000"/></mask></defs>
+<rect width="64" height="64" rx="14" fill="#111110"/>
+<g transform="translate(7 20.5) scale(.266)" fill="#F3F1EC"><g mask="url(#m)"><g transform="translate(25 0) skewX(-14)"><path d="M10 0H60V64C60 86 46 100 26 100H0V80H24C33 80 38 74 38 64V18H10Z"/><path fill-rule="evenodd" d="M70 100 104 0H128L162 100H140L132.5 78H99.5L92 100ZM116 29.4 127.1 62H104.9Z"/></g></g></g>
+</svg>
