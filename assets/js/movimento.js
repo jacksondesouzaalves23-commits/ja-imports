@@ -22,14 +22,18 @@
     const roda = $(".g3d__roda", g3d), cena = $(".g3d__cena", g3d);
     const col = (p) => C.colecoes[p.colecao];
     const conj = C.produtos.find((p) => p.fotosPorCor);
-    const ov = C.produtos.filter((p) => p.colecao === "oversize" && p.foto);
-    const so = C.produtos.filter((p) => p.colecao === "soft");
+    const so_ = g3d.dataset.colecao;   // na página Oversize/Soft mostra só aquela coleção
+    const ov = C.produtos.filter((p) => p.colecao === "oversize" && p.foto && (!so_ || so_ === "oversize"));
+    const so = C.produtos.filter((p) => p.colecao === "soft" && (!so_ || so_ === "soft"));
     const prod = [];
     while (ov.length || so.length) { if (ov.length) prod.push(ov.shift()); if (so.length) prod.push(so.shift()); }
     const item = (p) => ({ href: `${col(p).pagina}#${p.id}`, src: `${p.foto}-${p.larguras[0]}.webp`, w: p.w, h: p.h, alt: p.alt, nome: p.nome, info: `${col(p).nome} · ${brl(p.preco ?? col(p).preco)}` });
     const look = (cor) => ({ href: `${col(conj).pagina}#${conj.id}`, src: `${conj.fotosPorCor[cor]}-${conj.larguras[0]}.webp`, w: conj.w, h: conj.h, alt: conj.alt, nome: conj.nome, info: `Oversize · ${brl(conj.preco ?? col(conj).preco)} · ${cor}` });
     const lista = prod.map(item);
-    if (conj) { lista.splice(0, 0, look("Vermelho")); lista.splice(7, 0, look("Branco")); lista.splice(15, 0, look("Verde")); }
+    if (conj && (!so_ || so_ === conj.colecao)) {
+      const n = lista.length;
+      ["Vermelho", "Branco", "Verde"].forEach((cor, k) => lista.splice(Math.round((k * n) / 3) + k, 0, look(cor)));
+    }
 
     const RZ = [-6, 4, -2.5, 7, -4.5, 2, -7, 5, -1.5, 3.5, -5, 6];
     const DY = [-5, 8, -10, 3, 10, -4, 6, -9, 1, 7, -7, 4];
