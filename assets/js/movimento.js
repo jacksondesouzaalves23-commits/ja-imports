@@ -78,6 +78,39 @@
     return { st, medir, render, inicio, fim, cena, roda, total: lista.length };
   })() : null;
 
+  /* ==========================================================================
+     SOBRE — retrato sem fundo com camisas em órbita (passam atrás e na frente)
+     ========================================================================== */
+  const palco = $(".palco");
+  const O = palco && C ? (() => {
+    const orbita = $(".palco__orbita", palco), pessoa = $(".palco__pessoa", palco);
+    const ids = ["jordan-jumpman", "lacoste-croco", "nike-air", "diesel-oval-d", "philipp-plein-wings", "boss-holografica", "chicago-bulls", "tommy-since-1985"];
+    const prods = ids.map((id) => C.produtos.find((p) => p.id === id)).filter(Boolean);
+    orbita.insertAdjacentHTML("beforeend", prods.map((p) =>
+      `<span class="palco__item" style="--ar:${p.w}/${p.h}"><img src="assets/img/orbita/${p.id}-180.webp" srcset="assets/img/orbita/${p.id}-180.webp 180w, assets/img/orbita/${p.id}-320.webp 320w" sizes="(min-width:900px) 200px, 90px" width="${p.w}" height="${p.h}" alt="" loading="lazy" decoding="async"></span>`).join(""));
+    const itens = $$(".palco__item", orbita);
+    const st = { a: -22, giro: 0, abre: 1, R: 180 };
+    const medir = () => {
+      const w = pessoa.offsetWidth || 280;
+      const largo = innerWidth >= 900;   // no computador a órbita é menor para não cobrir o texto
+      st.R = Math.round(w * (largo ? 0.58 : 0.64));
+      orbita.style.setProperty("--R", st.R + "px");
+      orbita.style.setProperty("--cw", Math.round(Math.min(st.R * (largo ? 0.52 : 0.6), innerWidth * 0.25)) + "px");
+    };
+    const render = () => {
+      itens.forEach((el, i) => {
+        const th = st.a + st.giro + (i * 360) / itens.length;
+        const rad = (th * Math.PI) / 180;
+        const vira = -th + Math.sin(rad) * 34;   // a peça vira um pouco enquanto dá a volta
+        el.style.transform = `rotateY(${th.toFixed(2)}deg) translateZ(${(st.R * st.abre).toFixed(1)}px) rotateY(${vira.toFixed(2)}deg) rotateX(14deg) translate(-50%,-50%)`;
+        el.style.opacity = Math.min(1, st.abre * 1.4).toFixed(3);
+      });
+    };
+    medir(); render();
+    addEventListener("resize", () => { medir(); render(); });
+    return { st, medir, render };
+  })() : null;
+
   if (!window.gsap || !window.ScrollTrigger) {
     html.classList.add("sem-gsap");
     // sem a biblioteca: a vitrine 3D corre sozinha, devagar
@@ -231,6 +264,47 @@
     const d = 30 + (i % 3) * 28;
     gsap.fromTo(m, { y: d }, { y: -d, ease: "none", scrollTrigger: { trigger: m, start: "top bottom", end: "bottom top", scrub: true } });
   });
+
+  /* ---------- SOBRE: a rolagem gira as camisas e move o retrato em 3D ---------- */
+  if (O) {
+    const mundo = $(".palco__mundo", palco), figura = $(".palco__pessoa img", palco);
+    const mono = $(".palco__mono", palco), nome = $(".palco__nome", palco);
+    const passos = $$(".palco__passos li", palco), cont = $(".palco__n", palco);
+    const prog = { p: 0 };
+    let atual = -1;
+    const aplica = () => {
+      const p = prog.p;
+      O.st.a = -22 + p * 540;                       // uma volta e meia durante a rolagem
+      O.render();
+      gsap.set(figura, { rotationY: -14 + 28 * p, scale: 0.94 + 0.1 * p, transformOrigin: "50% 100%" });
+      gsap.set(mono, { scale: 0.92 + 0.34 * p, y: 30 - 90 * p });
+      gsap.set(nome, { xPercent: 6 - 46 * p });
+      const k = Math.min(passos.length - 1, Math.floor(p * passos.length));
+      if (k !== atual) {
+        atual = k;
+        passos.forEach((li, i) => li.classList.toggle("is-on", i === k));
+        cont.textContent = "0" + (k + 1);
+      }
+    };
+    ST.addEventListener("refreshInit", () => { O.medir(); O.render(); });
+    gsap.to(prog, { p: 1, ease: "none", onUpdate: aplica,
+      scrollTrigger: { trigger: palco, start: "top top", end: "bottom bottom", scrub: 0.8 } });
+    aplica();
+    // mesmo parado, as camisas continuam girando devagar (só enquanto a cena aparece)
+    let visivel = true;
+    new IntersectionObserver(([en]) => { visivel = en.isIntersecting; }).observe(palco);
+    gsap.ticker.add((t, dt) => { if (!visivel) return; O.st.giro += dt * 0.006; O.render(); });
+    // entrada: o retrato sobe e as camisas se abrem a partir dele
+    const espera = html.classList.contains("sem-intro") ? 0 : 1.3;
+    gsap.from(figura, { yPercent: 12, opacity: 0, duration: 1.4, ease: "expo.out", delay: espera + 0.15 });
+    gsap.from(O.st, { abre: 0, duration: 1.9, ease: "expo.out", delay: espera + 0.35, onUpdate: O.render });
+    if (fino) {
+      palco.addEventListener("pointermove", (e) => {
+        gsap.to(mundo, { rotationY: (e.clientX / innerWidth - 0.5) * 12, rotationX: -(e.clientY / innerHeight - 0.5) * 6,
+          duration: 1.1, ease: "power3", overwrite: "auto" });
+      });
+    }
+  }
 
   /* ---------- Sobre: os cortes de vídeo se abrem em leque ---------- */
   const cortes = $$(".corte");
