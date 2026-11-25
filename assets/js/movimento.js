@@ -87,7 +87,7 @@
     const ids = ["jordan-jumpman", "lacoste-croco", "nike-air", "diesel-oval-d", "philipp-plein-wings", "boss-holografica", "chicago-bulls", "tommy-since-1985"];
     const prods = ids.map((id) => C.produtos.find((p) => p.id === id)).filter(Boolean);
     orbita.insertAdjacentHTML("beforeend", prods.map((p) =>
-      `<span class="palco__item" style="--ar:${p.w}/${p.h}"><img src="assets/img/orbita/${p.id}-180.webp" srcset="assets/img/orbita/${p.id}-180.webp 180w, assets/img/orbita/${p.id}-320.webp 320w" sizes="(min-width:900px) 200px, 90px" width="${p.w}" height="${p.h}" alt="" loading="lazy" decoding="async"></span>`).join(""));
+      `<span class="palco__item" style="--ar:${p.w}/${p.h}"><img src="assets/img/orbita/${p.id}-180.webp" srcset="assets/img/orbita/${p.id}-180.webp 180w, assets/img/orbita/${p.id}-320.webp 320w" sizes="(min-width:900px) 200px, 90px" width="${p.w}" height="${p.h}" alt="" decoding="async" fetchpriority="low"></span>`).join(""));
     const itens = $$(".palco__item", orbita);
     const st = { a: -22, giro: 0, abre: 1, R: 180 };
     const medir = () => {
